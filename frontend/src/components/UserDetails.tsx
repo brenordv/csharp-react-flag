@@ -15,7 +15,6 @@ interface UserDetailsProps {
     onUpdate: () => void;
 }
 
-// Define the pulse animation
 const pulse = keyframes`
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
@@ -232,7 +231,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, onUpdate }) => {
                         <FormControl component="fieldset" sx={{ width: '100%' }}>
                             <FormGroup row>
                                 {roleOptions.map((role) => {
-                                    const hasRole = (user.roles & role.value) === role.value;
                                     const action = roleChanges[role.value];
 
                                     return (
@@ -301,7 +299,6 @@ const UserDetails: React.FC<UserDetailsProps> = ({ user, onUpdate }) => {
                         <FormControl component="fieldset" sx={{ width: '100%' }}>
                             <FormGroup row>
                                 {permissionOptions.map((permission) => {
-                                    const hasPermission = (user.permissions & permission.value) === permission.value;
                                     const action = permissionChanges[permission.value];
 
                                     return (

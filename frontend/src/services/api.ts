@@ -1,108 +1,46 @@
-import { UserRoles, UserPermissions } from '../types';
+import { UserCreateRequest, UserUpdateRequest, User } from '../types';
 
-/**
- * Checks if a given flag is present within a bitmask value.
- *
- * @param {number} value - The bitmask value representing roles or permissions.
- * @param {number} flag - The specific role or permission flag to check.
- * @returns {boolean} - Returns `true` if the flag is present in the value, otherwise `false`.
- *
- * @example
- * hasFlag(UserRoles.Admin | UserRoles.Member, UserRoles.Admin); // true
- * hasFlag(UserRoles.Member, UserRoles.Admin); // false
- */
-export const hasFlag = (value: number, flag: number): boolean => (value & flag) === flag;
+const API_URL = 'http://localhost:5076';
 
-/**
- * Converts a bitmask representing user roles into an array of role names.
- *
- * @param {UserRoles} roles - The bitmask representing a combination of user roles.
- * @returns {string[]} - An array of role names that the user has.
- *
- * @example
- * getUserRolesArray(UserRoles.Admin | UserRoles.Member);
- * // Returns: ["Admin", "Member"]
- */
-export const getUserRolesArray = (roles: UserRoles): string[] => {
-    const result: string[] = [];
+export const fetchUsers = async (): Promise<User[]> => {
+    const response = await fetch(`${API_URL}/users`);
+    return response.json();
+};
 
-    Object.entries(UserRoles).forEach(([key, value]) => {
-        if (typeof value === 'number' && hasFlag(roles, value)) {
-            result.push(key);
-        }
+export const fetchUser = async (id: string): Promise<User> => {
+    const response = await fetch(`${API_URL}/users/${id}`);
+    if (!response.ok) throw new Error('User not found');
+    return response.json();
+};
+
+export const createUser = async (user: UserCreateRequest): Promise<User> => {
+    const response = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
     });
-
-    return result;
+    return response.json();
 };
 
-/**
- * Converts a bitmask representing user permissions into an array of permission names.
- *
- * @param {UserPermissions} permissions - The bitmask representing a combination of user permissions.
- * @returns {string[]} - An array of permission names that the user has.
- *
- * @example
- * getUserPermissionsArray(UserPermissions.Read | UserPermissions.Write);
- * // Returns: ["Read", "Write"]
- */
-export const getUserPermissionsArray = (permissions: UserPermissions): string[] => {
-    const result: string[] = [];
-
-    Object.entries(UserPermissions).forEach(([key, value]) => {
-        if (typeof value === 'number' && hasFlag(permissions, value)) {
-            result.push(key);
-        }
+export const updateUser = async (id: string, user: UserUpdateRequest): Promise<User> => {
+    const response = await fetch(`${API_URL}/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
     });
-
-    return result;
+    return response.json();
 };
 
-/**
- * Retrieves a list of all possible user roles as an array of objects with labels and values.
- *
- * @returns {Array<{ label: string; value: number }>} - An array of role objects.
- *
- * @example
- * getRoleOptions();
- * // Returns:
- * // [
- * //   { label: "Anonymous", value: 1 },
- * //   { label: "PreMember", value: 2 },
- * //   { label: "Member", value: 4 },
- * //   { label: "SubscriberTier1", value: 8 },
- * //   ...
- * // ]
- */
-export const getRoleOptions = (): { label: string; value: number }[] => {
-    return Object.entries(UserRoles)
-        .filter(([_, value]) => typeof value === 'number')
-        .map(([key, value]) => ({
-            label: key,
-            value: value as number
-        }));
+export const deleteUser = async (id: string): Promise<void> => {
+    await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
 };
 
-/**
- * Retrieves a list of all possible user permissions as an array of objects with labels and values.
- *
- * @returns {Array<{ label: string; value: number }>} - An array of permission objects.
- *
- * @example
- * getPermissionOptions();
- * // Returns:
- * // [
- * //   { label: "Read", value: 1 },
- * //   { label: "Write", value: 2 },
- * //   { label: "DirectMessage", value: 4 },
- * //   { label: "CreateGroup", value: 8 },
- * //   ...
- * // ]
- */
-export const getPermissionOptions = (): { label: string; value: number }[] => {
-    return Object.entries(UserPermissions)
-        .filter(([_, value]) => typeof value === 'number')
-        .map(([key, value]) => ({
-            label: key,
-            value: value as number
-        }));
+export const checkUserRole = async (id: string, role: number): Promise<{ hasRole: boolean }> => {
+    const response = await fetch(`${API_URL}/users/${id}/has-role/${role}`);
+    return response.json();
+};
+
+export const checkUserPermission = async (id: string, permission: number): Promise<{ hasPermission: boolean }> => {
+    const response = await fetch(`${API_URL}/users/${id}/has-permission/${permission}`);
+    return response.json();
 };
